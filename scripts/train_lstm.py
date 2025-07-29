@@ -6,7 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 from app.models.lstm_model import LSTMPricePredictor
 from app.services.data_loader import fetch_upbit_data
 import joblib
-from scripts.config_lstm import SEQ_LEN, HIDDEN_SIZE, NUM_LAYERS, LR, EPOCHS, COUNT
+from scripts.config_lstm import SEQ_LEN, HIDDEN_SIZE, NUM_LAYERS, LR, EPOCHS, COUNT, INPUT_SIZE, OUTPUT_SIZE, MODEL_PATH, SCALER_PATH
 
 
 def make_sequences(data, seq_len=60):
@@ -32,10 +32,10 @@ def train_lstm():
     y_tensor = torch.tensor(y_data).float()
 
     model = LSTMPricePredictor(
-        input_size=1,
+        input_size=INPUT_SIZE,
         hidden_size=HIDDEN_SIZE,
         num_layers=NUM_LAYERS,
-        output_size=1
+        output_size=OUTPUT_SIZE
     )
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
@@ -52,8 +52,8 @@ def train_lstm():
 
     torch.save({
         "model_state_dict": model.state_dict()
-    }, "model_lstm.pt")
-    joblib.dump(scaler, "scaler_lstm.pkl")
+    }, MODEL_PATH)
+    joblib.dump(scaler, SCALER_PATH)
     print("✅ 모델 및 스케일러 저장 완료")
 
 
