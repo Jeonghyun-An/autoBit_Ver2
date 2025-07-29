@@ -1,4 +1,5 @@
 # app/models/lstm_model.py
+import joblib
 import torch
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
@@ -23,16 +24,12 @@ class LSTMModel(ModelBase):
     def load(self):
         checkpoint = torch.load("model_lstm.pt", weights_only=False)
         self.model.load_state_dict(checkpoint["model_state_dict"])
-    
-        # scaler 복원 (직접 속성 설정)
-        self.scaler.min_ = checkpoint["scaler_min"]
-        self.scaler.scale_ = 1 / (checkpoint["scaler_max"] - checkpoint["scaler_min"])
-    
-        # 🚨 핵심! n_samples_seen_ 필수
-        self.scaler.n_samples_seen_ = len(checkpoint["scaler_min"])
-    
+        # self.model.load_state_dict(torch.load("model_lstm.pt"))
         self.model.eval()
-
+    
+        # scaler 불러오기
+        self.scaler = joblib.load("scaler_lstm.pkl")
+       
 
 
     def predict(self, df: pd.DataFrame) -> dict:
