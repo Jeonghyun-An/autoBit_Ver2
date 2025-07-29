@@ -1,26 +1,22 @@
 # app/services/predictor.py
 import torch
-import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from app.models.lstm_model import LSTMPricePredictor
+from app.services.data_loader import fetch_upbit_data
 
 def get_price_prediction():
-    # 1. 데이터 불러오기
-    df = pd.read_csv("data/btc_sample.csv")
+    df = fetch_upbit_data(count=60)
+    if df is None or len(df) < 60:
+        return {"error": "Upbit에서 데이터를 가져오지 못했습니다."}
+
     close = df['close'].values.reshape(-1, 1)
 
     # 2. 스케일링
     scaler = MinMaxScaler()
     scaled = scaler.fit_transform(close)
 
-    # 3. 시퀀스 자르기 (최근 60분만 사용)
-    seq_len = 60
-    if len(scaled) < seq_len:
-        return {"error": "Not enough data"}
-
-    seq_input = scaled[-seq_len:]
-    x = torch.tensor(seq_input).float().unsqueeze(0)  # [1, 60, 1]
+    x = torch.tensor(scaled).float().unsqueeze(0)  # [1, 60, 1]
 
     # 4. 모델 로딩 및 예측
     model = LSTMPricePredictor()
@@ -33,5 +29,7 @@ def get_price_prediction():
     predicted_price = scaler.inverse_transform([[y_pred]])[0][0]
 
     return {
-        "predicted_price": round(predicted_price, 2)
+        "predicted_price": round(predicted_price, 2),
+        "latest_real_price": float(close[-1]),
+        "diff": round(predicted_price - close[-1][0], 2)
     }
