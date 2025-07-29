@@ -1,0 +1,47 @@
+# 🐍 Python 기본
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.pyo
+
+# 📦 가상환경
+venv/
+env/
+.venv/
+
+# 🧠 PyTorch 모델
+*.pt
+*.pth
+
+# 📊 데이터 파일 (선택)
+*.csv
+*.xls
+*.xlsx
+*.db
+
+# ⚙️ 설정 파일
+*.env
+.env.*
+
+# 🔄 캐시/임시
+*.log
+*.tmp
+*.bak
+.DS_Store
+
+# 🧪 테스트 결과
+.coverage
+htmlcov/
+*.pytest_cache/
+
+# VSCode 설정 (개인 설정은 제외)
+.vscode/
+
+# 📦 Pipenv, Poetry 등 기타
+Pipfile.lock
+poetry.lock
+
+# 🐳 Docker
+*.pid
+*.sock

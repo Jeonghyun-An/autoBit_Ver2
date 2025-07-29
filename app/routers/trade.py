@@ -1,11 +1,11 @@
 from fastapi import APIRouter
-from app.services.trading import execute_buy, excute_sell, get_trade_history
+from app.services.trading import excute_buy, excute_sell
 
 router = APIRouter()
 
 @router.post("/buy")
 def buy_signal():
-    result = execute_buy()
+    result = excute_buy()
     return {status:"buy", "result": result}
 
 @router.post("/sell")
