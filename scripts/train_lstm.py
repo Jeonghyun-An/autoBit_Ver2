@@ -1,4 +1,4 @@
-# train_lstm.py
+# scripts/train_lstm.py
 import torch
 import pandas as pd
 import numpy as np
@@ -6,7 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 from torch import nn
 from app.models.lstm_model import LSTMPricePredictor
 
-NOTE: LSTM 모델 학습 → 저장 → 불러오기
+# NOTE: LSTM 모델 학습 → 저장 → 불러오기
 
 # 데이터 로딩
 from app.services.data_loader import fetch_upbit_data
