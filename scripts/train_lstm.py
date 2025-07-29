@@ -5,16 +5,19 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from torch import nn
 from app.models.lstm_model import LSTMPricePredictor
+from app.services.data_loader import fetch_upbit_data
+
 
 # NOTE: LSTM 모델 학습 → 저장 → 불러오기
 
 # 데이터 로딩
-from app.services.data_loader import fetch_upbit_data
-
-df = fetch_upbit_data(count=200)
+df = fetch_upbit_data(count=300)
+if df is None or len(df) < 60:
+    print("데이터 부족")
+    exit()
 close = df['close'].values.reshape(-1, 1)
 
-# 스케일링
+# 정규화
 scaler = MinMaxScaler()
 scaled = scaler.fit_transform(close)
 
@@ -36,8 +39,10 @@ model = LSTMPricePredictor()
 loss_fn = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-model.train()
-for epoch in range(50):
+print("🔁 LSTM 모델 학습 시작...")
+epochs = 50
+for epoch in range(epochs):
+    model.train()
     optimizer.zero_grad()
     output = model(x_tensor)
     loss = loss_fn(output, y_tensor)
@@ -51,3 +56,5 @@ torch.save({
     "scaler_min": scaler.data_min_,
     "scaler_max": scaler.data_max_
 }, "model_lstm.pt")
+
+print("✅ LSTM 모델 저장 완료: model_lstm.pt")

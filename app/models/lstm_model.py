@@ -21,10 +21,12 @@ class LSTMModel(ModelBase):
         self.scaler = MinMaxScaler()
 
     def load(self):
-        checkpoint = torch.load("model_lstm.pt")
+        checkpoint = torch.load("model_lstm.pt", weights_only=False)  # ✅ 수정된 부분
         self.model.load_state_dict(checkpoint["model_state_dict"])
-        self.scaler.min_, self.scaler.scale_ = checkpoint["scaler_min"], 1 / (checkpoint["scaler_max"] - checkpoint["scaler_min"])
+        self.scaler.min_ = checkpoint["scaler_min"]
+        self.scaler.scale_ = 1 / (checkpoint["scaler_max"] - checkpoint["scaler_min"])
         self.model.eval()
+
 
 
     def predict(self, df: pd.DataFrame) -> dict:
