@@ -6,6 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 from torch import nn
 from app.models.lstm_model import LSTMPricePredictor
 from app.services.data_loader import fetch_upbit_data
+import joblib
 
 
 # NOTE: LSTM 모델 학습 → 저장 → 불러오기
@@ -53,8 +54,8 @@ for epoch in range(epochs):
 # 모델 및 스케일러 저장
 torch.save({
     "model_state_dict": model.state_dict(),
-    "scaler_min": scaler.data_min_,
-    "scaler_max": scaler.data_max_
 }, "model_lstm.pt")
+
+joblib.dump(scaler, "scaler_lstm.pkl")
 
 print("✅ LSTM 모델 저장 완료: model_lstm.pt")

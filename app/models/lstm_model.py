@@ -21,17 +21,24 @@ class LSTMModel(ModelBase):
         self.scaler = MinMaxScaler()
 
     def load(self):
-        checkpoint = torch.load("model_lstm.pt", weights_only=False)  # ✅ 수정된 부분
+        checkpoint = torch.load("model_lstm.pt", weights_only=False)
         self.model.load_state_dict(checkpoint["model_state_dict"])
+    
+        # scaler 복원 (직접 속성 설정)
         self.scaler.min_ = checkpoint["scaler_min"]
         self.scaler.scale_ = 1 / (checkpoint["scaler_max"] - checkpoint["scaler_min"])
+    
+        # 🚨 핵심! n_samples_seen_ 필수
+        self.scaler.n_samples_seen_ = len(checkpoint["scaler_min"])
+    
         self.model.eval()
 
 
 
     def predict(self, df: pd.DataFrame) -> dict:
         close = df['close'].values.reshape(-1, 1)
-        scaled = self.scaler.fit_transform(close)
+        # scaled = self.scaler.fit_transform(close) # 이미 학습된 모델이므로 금지, transform만 사용
+        scaled = self.scaler.transform(close)
         x = torch.tensor(scaled).float().unsqueeze(0)
 
         with torch.no_grad():

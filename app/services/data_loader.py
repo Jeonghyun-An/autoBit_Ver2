@@ -10,7 +10,7 @@ def fetch_upbit_data(count=200):
     }
     headers = {"accept": "application/json"}
 
-    response = requests.get(url, headers=headers, params=params)
+    response = requests.get(url, headers=headers, params=params, timeout=5)
 
     if response.status_code != 200:
         return None
