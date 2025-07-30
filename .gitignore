@@ -35,6 +35,7 @@ env/
 .coverage
 htmlcov/
 *.pytest_cache/
+*.json
 
 # VSCode 설정 (개인 설정은 제외)
 .vscode/

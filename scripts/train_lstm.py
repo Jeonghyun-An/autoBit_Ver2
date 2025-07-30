@@ -69,7 +69,27 @@ def train_lstm():
     plt.legend()
     plt.tight_layout()                            #  레이아웃 조정 (잘림 방지)
     plt.savefig("lstm_loss.png", dpi=150)         #  해상도 업
-    print("📈 Loss 그래프 저장 완료: lstm_loss.png")
+    print("📉 Loss 그래프 저장 완료: lstm_loss.png")
+    
+     # 예측 결과 그래프 추가
+    model.eval()
+    with torch.no_grad():
+        predicted = model(x_tensor).numpy()
+        predicted_prices = scaler.inverse_transform(predicted)
+        real_prices = scaler.inverse_transform(y_tensor.numpy())
+
+    plt.figure(figsize=(12, 6))
+    plt.plot(real_prices, label="Actual Price", color="blue")
+    plt.plot(predicted_prices, label="Predicted Price", color="red")
+    plt.title("LSTM Prediction vs Actual")
+    plt.xlabel("Time Step")
+    plt.ylabel("Price (KRW)")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig("lstm_prediction.png", dpi=150)
+    print("📈 예측 결과 그래프 저장 완료: lstm_prediction.png")
+    print("✅ LSTM 모델 학습 완료")
 
 
 
