@@ -1,25 +1,35 @@
+# app/routers/strategy.py
+
 from fastapi import APIRouter, Query
 from app.services.predictor import get_price_prediction
 from app.services.trading import execute_buy, execute_sell
 
 router = APIRouter()
 
-@router.post("/auto-trade")
-def auto_trade(model: str = Query("lstm", description="사용할 모델 이름"), threshold: int = 100000):
+@router.post("/auto-trade", tags=["Strategy"])
+def auto_trade(
+    model: str = Query("lstm", enum=["lstm", "xgb"], description="Model to use (lstm or xgb)"),
+    threshold: float = Query(100000.0, description="매수/매도 임계값 (예: 100000.0)")
+):
+    """
+    Execute automatic trading strategy based on model prediction.
+
+    - If predicted price > real price + threshold → BUY
+    - If predicted price < real price - threshold → SELL
+    - Otherwise → HOLD
+    """
     result = get_price_prediction(model)
-    
+
     if "error" in result:
         return result
-    
-    diff = result["diff"]
-    action = None
 
+    diff = result.get("diff", 0)
     if diff > threshold:
-        action = "BUY"
         execute_buy()
+        action = "BUY"
     elif diff < -threshold:
-        action = "SELL"
         execute_sell()
+        action = "SELL"
     else:
         action = "HOLD"
 
@@ -27,7 +37,5 @@ def auto_trade(model: str = Query("lstm", description="사용할 모델 이름")
         "action": action,
         "model": model,
         "threshold": threshold,
-        "predicted_price": result["predicted_price"],
-        "latest_real_price": result["latest_real_price"],
-        "diff": diff
+        **result
     }
