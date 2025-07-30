@@ -16,7 +16,7 @@ router = APIRouter()
 def auto_trade(
     model: str = Query("lstm", enum=["lstm", "xgb"], description="Model to use (lstm or xgb)"),
     threshold: float = Query(100000.0, description="매수/매도 임계값 (예: 100000.0)"),
-    strategy_name: str = Query("basic", enum=["basic"],description="사용할 전략 이름 (기본값: basic)")
+    strategy_name: str = Query("basic", enum=["basic","ema","macd"],description="사용할 전략 이름 (기본값: basic)")
 ):
     """
     Run auto trading strategy using specified model and strategy.
