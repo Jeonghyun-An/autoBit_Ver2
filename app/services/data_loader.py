@@ -17,8 +17,17 @@ def fetch_upbit_data(count=200):
 
     raw_data = response.json()
     df = pd.DataFrame(raw_data)
-    df = df[['candle_date_time_kst', 'trade_price', 'candle_acc_trade_volume']]
-    df.columns = ['timestamp', 'close', 'volume']
-    df = df.sort_values('timestamp')  # 최신순 → 과거순 정렬
+
+    df = df[[
+        'candle_date_time_kst',
+        'opening_price',
+        'high_price',
+        'low_price',
+        'trade_price',
+        'candle_acc_trade_volume'
+    ]]
+
+    df.columns = ['timestamp', 'open', 'high', 'low', 'close', 'volume']
+    df = df.sort_values('timestamp')  # 최신 → 과거 순 정렬
 
     return df
