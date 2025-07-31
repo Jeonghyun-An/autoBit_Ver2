@@ -7,8 +7,9 @@ from sklearn.preprocessing import MinMaxScaler
 from app.models.lstm_model import LSTMPricePredictor
 from app.services.data_loader import fetch_upbit_data
 import joblib
-from scripts.config_lstm import SEQ_LEN, HIDDEN_SIZE, NUM_LAYERS, LR, EPOCHS, COUNT, MODEL_PATH, SCALER_PATH
+from scripts.config_lstm import SEQ_LEN, HIDDEN_SIZE, NUM_LAYERS, LR, EPOCHS, COUNT,INPUT_SIZE,OUTPUT_SIZE, MODEL_PATH, SCALER_PATH
 import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 def make_sequences(data, seq_len=60):
     x, y = [], []
@@ -30,13 +31,13 @@ def train_lstm():
 
     x_data, y_data = make_sequences(scaled, seq_len=SEQ_LEN)
     x_tensor = torch.tensor(x_data).float()
-    y_tensor = torch.tensor(y_data).float()
+    y_tensor = torch.tensor(y_data).float().unsqueeze(1)
 
     model = LSTMPricePredictor(
-        input_size=1,
+        input_size=INPUT_SIZE,
         hidden_size=HIDDEN_SIZE,
         num_layers=NUM_LAYERS,
-        output_size=1
+        output_size=OUTPUT_SIZE
     )
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
@@ -60,7 +61,7 @@ def train_lstm():
     joblib.dump(scaler, SCALER_PATH)
     print("✅ 모델 및 스케일러 저장 완료")
     
-    # 그래프 저장
+    # 손실 그래프 저장
     plt.figure(figsize=(10, 5))                  # 그래프 사이즈 지정 (선택)
     plt.plot(losses, label="Train Loss")
     plt.title("LSTM Training Loss")
@@ -72,13 +73,21 @@ def train_lstm():
     plt.savefig("lstm_loss.png", dpi=150)         #  해상도 업
     print("📉 Loss 그래프 저장 완료: lstm_loss.png")
     
-     # 예측 결과 그래프 추가
+     # 예측 결과 및 지표 계산
     model.eval()
     with torch.no_grad():
         predicted = model(x_tensor).numpy()
         predicted_prices = scaler.inverse_transform(predicted)
-        real_prices = scaler.inverse_transform(y_tensor.numpy())
+        y_np = y_tensor.squeeze(1).numpy()
+        real_prices = scaler.inverse_transform(y_np.reshape(-1, 1))
 
+    mse = mean_squared_error(real_prices, predicted_prices)
+    mae = mean_absolute_error(real_prices, predicted_prices)
+    r2 = r2_score(real_prices, predicted_prices)
+
+    print(f" MSE: {mse:.4f}, MAE: {mae:.4f}, R2: {r2:.4f}")
+
+    # 예측 그래프 저장
     plt.figure(figsize=(12, 6))
     plt.plot(real_prices, label="Actual Price", color="blue")
     plt.plot(predicted_prices, label="Predicted Price", color="red")
