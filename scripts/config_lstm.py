@@ -1,7 +1,7 @@
 # LSTM 모델 학습용 설정값 (한 곳에서 관리)
 # long_seq_high_hidden 실험 결과 적용(채택함)
 
-SEQ_LEN = 90        # 시퀀스 길이
+SEQ_LEN = 30        # 시퀀스 길이
 HIDDEN_SIZE = 128    # LSTM 은닉층 크기
 NUM_LAYERS = 2      # LSTM 층 수
 LR = 0.001          # 학습률

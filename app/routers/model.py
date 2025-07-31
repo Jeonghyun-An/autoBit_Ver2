@@ -1,6 +1,8 @@
 # app/routers/model.py
 from fastapi import APIRouter, Query
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
+import os
+import json
 from app.services.predictor import get_price_prediction ,get_recent_prediction_plot
 
 router = APIRouter()
@@ -26,7 +28,9 @@ def train_model(model: str):
 @router.get("/predict/plot")
 def predict_plot(
     model: str = Query("lstm", enum=["lstm", "xgb"], description="모델 이름 (lstm 등)"),
-    count: int = Query(100, ge=10, le=500, description="최근 N개 포인트")
+    count: int = Query(300, ge=10, le=500, description="최근 N개 포인트"),
+    use_experiment: bool = Query(False, description="실험 결과 그래프를 사용할지 여부 (True 시 고정된 prediction.png 반환)")
 ):
-    plot_path = get_recent_prediction_plot(model=model, count=count)
+    plot_path = get_recent_prediction_plot(model=model, count=count, use_experiment=use_experiment)
     return FileResponse(plot_path, media_type="image/png")
+
