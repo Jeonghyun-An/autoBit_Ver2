@@ -34,3 +34,12 @@ def predict_plot(
     plot_path = get_recent_prediction_plot(model=model, count=count, use_experiment=use_experiment)
     return FileResponse(plot_path, media_type="image/png")
 
+@router.get("/model/info")
+def get_model_info():
+    info_path = "model_info.json"
+    if not os.path.exists(info_path):
+        return JSONResponse(status_code=404, content={"error": "model_info.json not found"})
+
+    with open(info_path, "r", encoding="utf-8") as f:
+        info = json.load(f)
+    return info
