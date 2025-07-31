@@ -8,8 +8,10 @@ from app.models.base import ModelBase
 class LSTMPricePredictor(torch.nn.Module):
     def __init__(self, input_size=1, hidden_size=64, num_layers=2, output_size=1):
         super().__init__()
-        self.lstm = torch.nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.lstm = torch.nn.LSTM(input_size, hidden_size, num_layers, batch_first=True, dropout=0.2)
         self.fc = torch.nn.Linear(hidden_size, output_size)
+        # self.relu = ReLU()
+        # self.fc2 = Linear(32, 1)
 
     def forward(self, x):
         out, _ = self.lstm(x)
