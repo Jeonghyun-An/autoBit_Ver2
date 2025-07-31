@@ -4,6 +4,7 @@ import torch
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from app.models.base import ModelBase
+from scripts.config_lstm import HIDDEN_SIZE, NUM_LAYERS, INPUT_SIZE, OUTPUT_SIZE
 
 class LSTMPricePredictor(torch.nn.Module):
     def __init__(self, input_size=1, hidden_size=64, num_layers=2, output_size=1):
@@ -20,7 +21,12 @@ class LSTMPricePredictor(torch.nn.Module):
 
 class LSTMModel(ModelBase):
     def __init__(self):
-        self.model = LSTMPricePredictor()
+        self.model = LSTMPricePredictor(
+            input_size=INPUT_SIZE,
+            hidden_size=HIDDEN_SIZE,
+            num_layers=NUM_LAYERS,
+            output_size=OUTPUT_SIZE
+        )
         self.scaler = MinMaxScaler()
 
     def load(self):
