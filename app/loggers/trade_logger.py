@@ -6,7 +6,9 @@ from pathlib import Path
 LOG_PATH = Path("logs/trade_log.csv")
 LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-def log_trade(action: str, model: str, predicted: float, real: float, diff: float, strategy: str = "default"):
+# app/loggers/trade_logger.py
+
+def log_trade(action: str, model: str, strategy: str, predicted_price: float, real_price: float, diff: float):
     print("로그 기록 시작")
     is_new = not LOG_PATH.exists()
 
@@ -19,7 +21,8 @@ def log_trade(action: str, model: str, predicted: float, real: float, diff: floa
             action.upper(),
             model,
             strategy,
-            round(predicted, 2),
-            round(real, 2),
+            round(predicted_price, 2),
+            round(real_price, 2),
             round(diff, 2)
         ])
+    print("로그 기록 완료")
