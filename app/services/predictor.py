@@ -38,8 +38,6 @@ def get_recent_prediction_plot(model: str = "lstm", count: int = 300, use_experi
         if os.path.exists(experiment_dir):
             return experiment_dir
 
-
-    # fallback: 예측 직접 계산
     df = fetch_upbit_data(count=count)
     if df is None or len(df) < 100:
         raise ValueError("데이터 부족")
@@ -47,8 +45,24 @@ def get_recent_prediction_plot(model: str = "lstm", count: int = 300, use_experi
     model_class = model_dict[model]()
     model_class.load()
 
-    close = df['close'].values.reshape(-1, 1)
-    scaled = model_class.scaler.transform(close)
+    # --- 예상 입력 피처 추출 ---
+    try:
+        feature_names = model_class.scaler.feature_names_in_.tolist()
+    except AttributeError:
+        feature_count = model_class.scaler.n_features_in_
+        # ['close', 'open', 'high', 'low', 'volume'] 기준 우선 순위로 설정
+        all_possible = ["close", "open", "high", "low", "volume"]
+        feature_names = all_possible[:feature_count]
+
+    # 실제 df에 존재하는 컬럼만 사용
+    feature_names = [f for f in feature_names if f in df.columns]
+    if len(feature_names) != model_class.scaler.n_features_in_:
+        raise ValueError(
+            f"입력 피처 수 불일치: scaler expects {model_class.scaler.n_features_in_}, but got {len(feature_names)}"
+        )
+
+    input_data = df[feature_names].values
+    scaled = model_class.scaler.transform(input_data)
 
     seq_len = 90
     x_data = []
@@ -59,13 +73,16 @@ def get_recent_prediction_plot(model: str = "lstm", count: int = 300, use_experi
     with torch.no_grad():
         y_pred = model_class.model(x_tensor).numpy()
 
-    y_pred_rescaled = model_class.scaler.inverse_transform(y_pred)
-    y_true_rescaled = close[seq_len:]
+    # ✅ close만 inverse_transform
+    dummy = np.zeros((len(y_pred), input_data.shape[1]))
+    dummy[:, 0] = y_pred[:, 0]
+    y_pred_rescaled = model_class.scaler.inverse_transform(dummy)[:, 0]
+
+    y_true_rescaled = df['close'].values[seq_len:]
 
     mse = mean_squared_error(y_true_rescaled, y_pred_rescaled)
     mae = mean_absolute_error(y_true_rescaled, y_pred_rescaled)
     r2 = r2_score(y_true_rescaled, y_pred_rescaled)
-
 
     print(f"[DEBUG] Prediction MSE: {mse:.4f}, MAE: {mae:.2f}, R2: {r2:.4f}")
 
