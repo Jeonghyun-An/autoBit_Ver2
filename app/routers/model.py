@@ -4,6 +4,7 @@ from fastapi.responses import FileResponse, JSONResponse
 import os
 import json
 from app.services.predictor import get_price_prediction ,get_recent_prediction_plot
+from app.services.model_manager import init_rollback_model, rollback_to_saved_model
 
 router = APIRouter()
 
@@ -43,3 +44,11 @@ def get_model_info():
     with open(info_path, "r", encoding="utf-8") as f:
         info = json.load(f)
     return info
+
+@router.post("/model/rollback/init")
+def init_rollback(experiment_name: str = Query(..., description="저장할 실험 이름")):
+    return init_rollback_model(experiment_name)
+
+@router.post("/model/rollback/apply")
+def rollback_apply():
+    return rollback_to_saved_model()
