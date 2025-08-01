@@ -65,7 +65,7 @@ def train_lstm():
 
     # ✅ 스케일러 + 피처 정보 저장
     joblib.dump({
-    "scaler": fitted_scaler,
+    "scaler": scaler,
     "features": ["close", "open", "high", "low", "volume"]  # 학습 시 사용한 feature
 }, "scaler_lstm.pkl")
 
