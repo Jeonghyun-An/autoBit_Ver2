@@ -14,7 +14,8 @@ from app.services.counter import (
 from app.services.simulation_state import simulate_trade, reset_simulation, get_simulation_status
 from app.services.strategy import strategy_registry
 from app.services.data_loader import fetch_upbit_data
-from app.loggers.trade_logger import log_trade
+from app.loggers.trade_logger import log_trade, log_trade_to_db
+
 
 
 router = APIRouter()
@@ -71,6 +72,8 @@ def simulate_auto_trade(
 
     action = strategy_fn(predicted, real, threshold)
     simulate_trade(action, real, model, strategy_name)
+    log_trade_to_db(action, model, strategy_name, predicted, real, diff)
+
 
     return {
         "action": action,
