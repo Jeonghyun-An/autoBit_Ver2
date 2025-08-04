@@ -1,6 +1,8 @@
 # app/services/trading.py
 from app.services.predictor import get_price_prediction
-from app.loggers.trade_logger import log_trade
+from app.loggers.trade_logger import log_trade, log_trade_to_db
+
+
 
 def execute_buy(model: str = "lstm", threshold: float = 100000, strategy: str = "default"):
     result = get_price_prediction(model)
