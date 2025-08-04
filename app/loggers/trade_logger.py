@@ -4,6 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from app.models.trade import Trade
 from app.core.database import SessionLocal
+from app.ws.manager import ws_manager 
 
 
 LOG_PATH = Path("logs/trade_log.csv")
@@ -30,9 +31,10 @@ def log_trade(action: str, model: str, strategy: str, predicted_price: float, re
         ])
     print("로그 기록 완료")
     
-def log_trade_to_db(action, model, strategy, predicted_price, real_price, diff):
+async def log_trade_to_db(action, model, strategy, predicted_price, real_price, diff):
     db = SessionLocal()
     try:
+        diff = float(diff) 
         trade = Trade(
             action=action.upper(),
             price=real_price,
@@ -43,8 +45,14 @@ def log_trade_to_db(action, model, strategy, predicted_price, real_price, diff):
         db.add(trade)
         db.commit()
         print("✅ DB에 트레이드 기록됨")
+        await log_trade_to_ws(trade.__dict__)
     except Exception as e:
         db.rollback()
         print(f"❌ DB 기록 실패: {e}")
     finally:
         db.close()
+        
+        
+async def log_trade_to_ws(trade_dict: dict):
+    import json
+    await ws_manager.broadcast(json.dumps({"type": "trade_update", "payload": trade_dict}, default=str))

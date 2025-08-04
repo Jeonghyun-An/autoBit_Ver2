@@ -4,6 +4,7 @@ from app.routers import trade, model, strategy
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.core.init_db import init_db
+from app.routers import ws
 
 load_dotenv()
 
@@ -28,3 +29,4 @@ app.add_middleware(
 app.include_router(trade.router, prefix="/trade", tags=["Trade"])
 app.include_router(model.router, prefix="/model", tags=["Model"])
 app.include_router(strategy.router, prefix="/strategy", tags=["Strategy"])
+app.include_router(ws.router)
