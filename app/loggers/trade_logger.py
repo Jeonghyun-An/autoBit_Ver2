@@ -4,7 +4,9 @@ from datetime import datetime
 from pathlib import Path
 from app.models.trade import Trade
 from app.core.database import SessionLocal
-from app.ws.manager import ws_manager 
+from app.ws.manager import ws_manager
+import base64
+from app.services.predictor import get_recent_prediction_plot 
 
 
 LOG_PATH = Path("logs/trade_log.csv")
@@ -55,4 +57,23 @@ async def log_trade_to_db(action, model, strategy, predicted_price, real_price, 
         
 async def log_trade_to_ws(trade_dict: dict):
     import json
-    await ws_manager.broadcast(json.dumps({"type": "trade_update", "payload": trade_dict}, default=str))
+    from app.services.predictor import get_recent_prediction_plot
+
+    # ✅ 차트 이미지 읽기
+    chart_path = get_recent_prediction_plot(model=trade_dict["model"], count=300, use_experiment=False)
+    chart_base64 = None
+
+    if Path(chart_path).exists():
+        with open(chart_path, "rb") as f:
+            chart_base64 = base64.b64encode(f.read()).decode("utf-8")
+
+    # ✅ payload에 포함해서 전송
+    payload = {
+        "type": "trade_update",
+        "payload": {
+            "trade": trade_dict,
+            "chart_base64": chart_base64
+        }
+    }
+
+    await ws_manager.broadcast(json.dumps(payload, default=str))
